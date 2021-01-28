@@ -48,6 +48,8 @@ pipeline {
                     echo 'Generated Analysis Result'
                 }
             }
+        
+        }
         stage('CODE ANALYSIS with SONARQUBE') {
           
 		  environment {
@@ -72,7 +74,6 @@ pipeline {
           }
         }
 
-        }
     }
 }
       
