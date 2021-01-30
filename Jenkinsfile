@@ -9,9 +9,9 @@ pipeline {
     environment {
         NEXUS_VERSION = "nexus3"
         NEXUS_PROTOCOL = "http"
-        NEXUS_URL = "172.31.72.27:8081"
+        NEXUS_URL = "172.31.35.180:8081"
         NEXUS_REPOSITORY = "vprofile-release"
-	NEXUS_REPO_ID    = "vprofile-release"
+	      NEXUS_REPO_ID    = "vprofile-release"
         NEXUS_CREDENTIAL_ID = "nexuslogin"
         ARTVERSION = "${env.BUILD_ID}"
     }
@@ -48,6 +48,29 @@ pipeline {
                           echo 'Generated Analysis Result'
                       }
                   }
+        }
+        stage('CODE ANALYSIS with SONARQUBE') {
+
+		  environment {
+             scannerHome = tool 'sonarscanner4'
+          }
+
+          steps {
+            withSonarQubeEnv('sonar-pro') {
+               sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
+                   -Dsonar.projectName=vprofile-repo \
+                   -Dsonar.projectVersion=1.0 \
+                   -Dsonar.sources=src/ \
+                   -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
+                   -Dsonar.junit.reportsPath=target/surefire-reports/ \
+                   -Dsonar.jacoco.reportsPath=target/jacoco.exec \
+                   -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml'''
+            }
+
+            timeout(time: 10, unit: 'MINUTES') {
+               waitForQualityGate abortPipeline: true
+            }
+          }
         }
     }
 }
